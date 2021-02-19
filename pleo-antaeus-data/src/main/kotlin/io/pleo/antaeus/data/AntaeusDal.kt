@@ -30,6 +30,17 @@ class AntaeusDal(private val db: Database) {
         }
     }
 
+    /**
+     * Returns a list of all the invoices with the requested [status].
+     */
+    fun fetchInvoicesByStatus(status: String): List<Invoice> {
+        return transaction(db) {
+            InvoiceTable
+                .select { InvoiceTable.status.eq(status) }
+                .map { it.toInvoice() }
+        }
+    }
+
     fun fetchInvoices(): List<Invoice> {
         return transaction(db) {
             InvoiceTable
