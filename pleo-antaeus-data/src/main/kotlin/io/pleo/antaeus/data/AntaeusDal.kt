@@ -16,6 +16,7 @@ import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.transactions.transaction
 
 class AntaeusDal(private val db: Database) {
+
     fun fetchInvoice(id: Int): Invoice? {
         // transaction(db) runs the internal query as a new database transaction.
         return transaction(db) {
@@ -39,8 +40,8 @@ class AntaeusDal(private val db: Database) {
      * Changes the status of the transaction with id .
      */
     fun updateInvoiceStatusById(id: Int, new_status: InvoiceStatus) {
-        InvoiceTable.update ({ InvoiceTable.id.eq(id) }) {
-            transaction(db) {
+        transaction(db) {
+            InvoiceTable.update ({ InvoiceTable.id.eq(id) }) {
                 it[status] = new_status.toString()
             }
         }
@@ -107,5 +108,14 @@ class AntaeusDal(private val db: Database) {
         }
 
         return fetchCustomer(id)
+    }
+
+    /**
+     * Deletes all customers, useful for testing
+     */
+    fun dropCustomers() {
+        transaction ( db ) {
+            CustomerTable.deleteAll()
+        }
     }
 }
