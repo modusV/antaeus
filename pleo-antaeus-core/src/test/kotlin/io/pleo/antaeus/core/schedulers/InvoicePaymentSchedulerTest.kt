@@ -9,6 +9,7 @@ import io.pleo.antaeus.core.services.CustomerService
 import io.pleo.antaeus.core.services.InvoiceService
 import io.pleo.antaeus.db.createDb
 import io.pleo.antaeus.models.Invoice
+import io.pleo.antaeus.models.InvoiceStatus
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.Test
@@ -66,7 +67,8 @@ class InvoicePaymentSchedulerTest {
     private fun testPeriodicDelay(
             delay :(Long) -> Long,
             quantity : Long,
-            reschedule : Boolean) : ScheduledFuture<*> {
+            reschedule : Boolean,
+            status : InvoiceStatus) : ScheduledFuture<*> {
         return executor.schedule({
                 runBlocking {
                     atomicInteger.incrementAndGet()
@@ -75,7 +77,7 @@ class InvoicePaymentSchedulerTest {
 
                 // reschedule task
                 if (reschedule) {
-                    testPeriodicDelay(delay, quantity, true)
+                    testPeriodicDelay(delay, quantity, true, status)
                 }
             },
             delay(quantity),

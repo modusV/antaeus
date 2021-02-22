@@ -24,7 +24,7 @@ internal fun setupInitialData(dal: AntaeusDal) {
                     currency = customer.currency
                 ),
                 customer = customer,
-                status = if (it == 1) InvoiceStatus.PENDING else InvoiceStatus.PAID
+                status = listOf(InvoiceStatus.PENDING, InvoiceStatus.PAID, InvoiceStatus.FAILED_NETWORK).random()
             )
         }
     }
