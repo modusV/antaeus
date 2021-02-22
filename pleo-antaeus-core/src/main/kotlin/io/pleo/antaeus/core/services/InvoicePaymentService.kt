@@ -1,16 +1,13 @@
-package io.pleo.antaeus.core.runnables
+package io.pleo.antaeus.core.services
 
 import io.pleo.antaeus.core.exceptions.CurrencyMismatchException
 import io.pleo.antaeus.core.exceptions.CustomerNotFoundException
 import io.pleo.antaeus.core.exceptions.NetworkException
-import io.pleo.antaeus.core.services.BillingService
-import io.pleo.antaeus.core.services.CustomerService
-import io.pleo.antaeus.core.services.InvoiceService
 import io.pleo.antaeus.models.*
 import kotlinx.coroutines.*
 
 
-class PayInvoices (
+class InvoicePaymentService (
         private val billingService : BillingService,
         private val customerService: CustomerService,
         private val invoiceService: InvoiceService

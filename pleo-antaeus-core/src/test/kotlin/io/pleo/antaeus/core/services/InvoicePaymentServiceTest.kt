@@ -1,11 +1,8 @@
-package io.pleo.antaeus.core.runnables
+package io.pleo.antaeus.core.services
 
 import io.mockk.impl.annotations.MockK
 import io.pleo.antaeus.core.exceptions.NetworkException
 import io.pleo.antaeus.core.external.PaymentProvider
-import io.pleo.antaeus.core.services.BillingService
-import io.pleo.antaeus.core.services.CustomerService
-import io.pleo.antaeus.core.services.InvoiceService
 import io.pleo.antaeus.db.createDb
 import io.pleo.antaeus.models.*
 import kotlinx.coroutines.*
@@ -15,14 +12,10 @@ import org.junit.jupiter.api.TestInstance
 import java.math.BigDecimal
 import kotlin.random.Random
 import org.junit.jupiter.api.Assertions.assertEquals
-import java.time.ZonedDateTime
-import java.time.temporal.ChronoUnit
-import java.time.temporal.TemporalAdjuster
-import java.time.temporal.TemporalAdjusters
 
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-class PayInvoicesTest {
+class InvoicePaymentServiceTest {
 
     @MockK
     private val db = createDb("test_payment", false)
@@ -43,7 +36,7 @@ class PayInvoicesTest {
     })
 
     @MockK
-    private val payInvoices = PayInvoices(
+    private val invoicePaymentService = InvoicePaymentService(
         invoiceService = invoiceService,
         customerService = customerService,
         billingService = billingService
@@ -81,7 +74,7 @@ class PayInvoicesTest {
         runBlocking {
             println("Start paying ...")
             val res = GlobalScope.async {
-                payInvoices.performAllPaymentsByStatus()
+                invoicePaymentService.performAllPaymentsByStatus()
             }
 
             val failed = res.await()
