@@ -1,4 +1,4 @@
-package io.pleo.antaeus.core.recurring
+package io.pleo.antaeus.core.runnables
 
 import io.mockk.impl.annotations.MockK
 import io.pleo.antaeus.core.exceptions.NetworkException
@@ -15,10 +15,14 @@ import org.junit.jupiter.api.TestInstance
 import java.math.BigDecimal
 import kotlin.random.Random
 import org.junit.jupiter.api.Assertions.assertEquals
+import java.time.ZonedDateTime
+import java.time.temporal.ChronoUnit
+import java.time.temporal.TemporalAdjuster
+import java.time.temporal.TemporalAdjusters
 
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-class PaymentSchedulerTest {
+class PayInvoicesTest {
 
     @MockK
     private val db = createDb("test_payment", false)
@@ -39,7 +43,7 @@ class PaymentSchedulerTest {
     })
 
     @MockK
-    private val paymentScheduler = PaymentScheduler(
+    private val payInvoices = PayInvoices(
         invoiceService = invoiceService,
         customerService = customerService,
         billingService = billingService
@@ -77,7 +81,7 @@ class PaymentSchedulerTest {
         runBlocking {
             println("Start paying ...")
             val res = GlobalScope.async {
-                paymentScheduler.performPayments()
+                payInvoices.performAllPaymentsByStatus()
             }
 
             val failed = res.await()
@@ -95,13 +99,4 @@ class PaymentSchedulerTest {
 
 
 
-    @Test
-    fun `test if the tasks are concurrent`() {
-        GlobalScope.launch {
-                paymentScheduler.syncroTest(15)
-        }
-        println("Main thread not blocked")
-        Thread.sleep(7000L)
-        println("Thread exiting")
-    }
 }
