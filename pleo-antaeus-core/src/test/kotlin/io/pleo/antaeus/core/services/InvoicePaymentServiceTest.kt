@@ -1,6 +1,7 @@
 package io.pleo.antaeus.core.services
 
 import io.mockk.impl.annotations.MockK
+import io.pleo.antaeus.core.exceptions.CustomerNotFoundException
 import io.pleo.antaeus.core.exceptions.NetworkException
 import io.pleo.antaeus.core.external.PaymentProvider
 import io.pleo.antaeus.db.createDb
@@ -27,10 +28,16 @@ class InvoicePaymentServiceTest {
     private val billingService = BillingService(object : PaymentProvider {
         override fun charge(invoice: Invoice): Boolean {
             val choice = (0..10).random()
-            if (choice < 6) {
-                return Random.nextBoolean()
-            } else {
-                throw NetworkException()
+            when {
+                choice < 6 -> {
+                    return Random.nextBoolean()
+                }
+                (choice < 8) and (choice >= 6) -> {
+                    throw NetworkException()
+                }
+                else -> {
+                    throw CustomerNotFoundException(choice)
+                }
             }
         }
     })
@@ -51,21 +58,21 @@ class InvoicePaymentServiceTest {
         invoiceService.deleteAll()
         customerService.deleteAll()
 
-        val customers = (1..3).mapNotNull {
-            customerService.create(
+        val customers = (1..100).mapNotNull {
+            db.createCustomer(
                 currency = Currency.values()[Random.nextInt(0, Currency.values().size)]
             )
         }
 
         customers.forEach { customer ->
-            (1..5).forEach {
-                invoiceService.create(
+            (1..10).forEach {
+                db.createInvoice(
                     amount = Money(
-                        value = BigDecimal(it),
+                        value = BigDecimal(Random.nextDouble(10.0, 500.0)),
                         currency = customer.currency
                     ),
                     customer = customer,
-                    status = if (it <= 3) InvoiceStatus.PENDING else InvoiceStatus.PAID
+                    status = if (it % 2 == 0) InvoiceStatus.PENDING else InvoiceStatus.PAID
                 )
             }
         }
