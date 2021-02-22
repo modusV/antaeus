@@ -17,8 +17,13 @@ fun Project.kotlinProject() {
         "implementation"("org.slf4j:slf4j-simple:1.7.30")
         "implementation"("io.github.microutils:kotlin-logging:1.7.8")
 
+        // coroutines
+        "implementation"("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.4.2")
+
         // Mockk
         "testImplementation"("io.mockk:mockk:1.9.3")
+
+
 
         // JUnit 5
         "testImplementation"("org.junit.jupiter:junit-jupiter-api:$junitVersion")

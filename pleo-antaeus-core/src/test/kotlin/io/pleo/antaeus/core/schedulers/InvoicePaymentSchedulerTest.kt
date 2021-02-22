@@ -67,8 +67,7 @@ class InvoicePaymentSchedulerTest {
             delay :(Long) -> Long,
             quantity : Long,
             reschedule : Boolean) : ScheduledFuture<*> {
-        return executor.schedule(
-            Runnable {
+        return executor.schedule({
                 runBlocking {
                     atomicInteger.incrementAndGet()
                     println("Executed at ${ZonedDateTime.now()}")
@@ -129,8 +128,7 @@ class InvoicePaymentSchedulerTest {
         }
 
         runBlocking {
-            val fut = executor.schedule(
-                Runnable {
+            val fut = executor.schedule({
                     testObj.status = 1
                 },
                 1000,
@@ -147,9 +145,13 @@ class InvoicePaymentSchedulerTest {
     /**
      * Helper function to test multiple asynchronous calls.
      */
-    private fun runAsync(task: Callable<Int>, delay: Long, times : Int, latch: CountDownLatch) : ScheduledFuture<*> {
+    private fun runAsync(
+            task: Callable<Int>,
+            delay: Long,
+            times : Int,
+            latch: CountDownLatch) : ScheduledFuture<*> {
         return executor.schedule(
-            Runnable {
+             {
                 val res = runBlocking {
                     task.call()
                 }
@@ -186,7 +188,7 @@ class InvoicePaymentSchedulerTest {
         }
 
         runBlocking {
-            val res = runAsync(step, 1000, 3, latch).get()
+            runAsync(step, 1000, 3, latch).get()
         }
 
 
@@ -203,11 +205,9 @@ class InvoicePaymentSchedulerTest {
     @Test
     fun `two tasks single executor`() {
         val latch = CountDownLatch(2)
-        val executed = 0
 
         (3..4).map {
-            executor.schedule(
-                {
+            executor.schedule({
                     latch.countDown()
                     println("$it executed")
                 },
@@ -226,8 +226,7 @@ class InvoicePaymentSchedulerTest {
     fun `concurrent tasks` () {
         val latch = CountDownLatch(5)
         (1..5).map {
-            executor.schedule(
-                {
+            executor.schedule({
                     latch.countDown()
                     println("$it executed")
                 },

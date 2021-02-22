@@ -68,9 +68,9 @@ class InvoicePaymentScheduler (
         periodic : Boolean = true,
         function : ((Long) -> Long, Long, Boolean)
             -> ScheduledFuture<*> = ::schedulePeriodicWithDelay
-        )
+        ) : ScheduledFuture<*>
     {
-        when (unit) {
+        return when (unit) {
             ChronoUnit.SECONDS -> {
                 function(::millisToNextSecond, quantity, periodic)
             }
