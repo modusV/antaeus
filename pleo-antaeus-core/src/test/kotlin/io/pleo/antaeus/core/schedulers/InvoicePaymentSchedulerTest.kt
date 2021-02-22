@@ -113,8 +113,8 @@ class InvoicePaymentSchedulerTest {
             periodic = true,
             function = ::testPeriodicDelay
         )
-        Thread.sleep(10000)
-        assert((atomicInteger.get() == 9) or (atomicInteger.get() == 10))
+        Thread.sleep(5000)
+        assert((atomicInteger.get() == 4) or (atomicInteger.get() == 5))
     }
 
     /**
