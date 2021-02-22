@@ -42,6 +42,9 @@ class InvoicePaymentServiceTest {
         billingService = billingService
     )
 
+    /**
+     * Initialises fake data in the database before each test.
+     */
     @BeforeEach
     fun init() {
 
@@ -69,6 +72,10 @@ class InvoicePaymentServiceTest {
     }
 
 
+    /**
+     * Tests if the payments happen asynchronously and if the database update was
+     * successful.
+     */
     @Test
     fun `pay all pending no errors`() {
         runBlocking {

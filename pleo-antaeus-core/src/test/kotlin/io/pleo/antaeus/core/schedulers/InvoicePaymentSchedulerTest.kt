@@ -118,7 +118,8 @@ class InvoicePaymentSchedulerTest {
     }
 
     /**
-     * Here you can find several tests that I wrote for development purposes.
+     * From here on, you can find several tests that I wrote for development purposes.
+     * Test if executor runs jobs asynchronously.
      */
     @Test
     fun `executor should execute asynchronously`() {
@@ -143,7 +144,10 @@ class InvoicePaymentSchedulerTest {
     }
 
 
-    fun runAsync(task: Callable<Int>, delay: Long, times : Int, latch: CountDownLatch) : ScheduledFuture<*> {
+    /**
+     * Helper function to test multiple asynchronous calls.
+     */
+    private fun runAsync(task: Callable<Int>, delay: Long, times : Int, latch: CountDownLatch) : ScheduledFuture<*> {
         return executor.schedule(
             Runnable {
                 val res = runBlocking {
@@ -153,7 +157,7 @@ class InvoicePaymentSchedulerTest {
                 println("Has been called $res times and will be called other ${times - 1} times")
 
                 if (times > 1) {
-                    runAsync(task, 1000, times - 1, latch)
+                    runAsync(task, delay, times - 1, latch)
                 }
                 latch.countDown()
             },
@@ -163,6 +167,9 @@ class InvoicePaymentSchedulerTest {
     }
 
 
+    /**
+     * Tests multiple asynchronous call of the same function
+     */
     @Test
     fun `fails if is not executed n times` () {
 
@@ -183,12 +190,16 @@ class InvoicePaymentSchedulerTest {
         }
 
 
-        latch.await()
+        latch.await(5L, TimeUnit.SECONDS)
         assertEquals(testObj.timesCalled, rescheduleTimes)
         println("Tasks completed")
     }
 
 
+    /**
+     * Tests if the executor can hold two scheduled tasks
+     * (whether it has an internal queue or not)
+     */
     @Test
     fun `two tasks single executor`() {
         val latch = CountDownLatch(2)
@@ -208,6 +219,9 @@ class InvoicePaymentSchedulerTest {
         assertEquals(res, true)
     }
 
+    /**
+     * Tests how the executor behaves when it receives multiple tasks at the same time.
+     */
     @Test
     fun `concurrent tasks` () {
         val latch = CountDownLatch(5)

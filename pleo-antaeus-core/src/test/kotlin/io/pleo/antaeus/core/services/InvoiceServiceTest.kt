@@ -46,8 +46,11 @@ class InvoiceServiceTest {
     }
 
 
+    /**
+     * Tests the fetchByStatus function.
+     */
     @Test
-    fun `will throw if fetchByStatus fails`() {
+    fun `will fail if fetchByStatus fails`() {
         val pending : List<Invoice> = invoiceService.fetchByStatus(InvoiceStatus.PENDING)
         assertEquals(pending.size, 1)
         assertEquals(pending[0].customerId, 0)
