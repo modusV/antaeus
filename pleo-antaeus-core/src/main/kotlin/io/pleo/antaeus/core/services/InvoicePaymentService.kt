@@ -15,7 +15,7 @@ class InvoicePaymentService (
 
 
     /**
-     * Pay a single [invoice]. Returns a pair representing the invoice id and the billing outcome
+     * Pay a single [invoice]. Returns a pair representing the invoice id and the billing outcome.
      */
     private fun payInvoice(invoice : Invoice) : Pair<Int, InvoiceStatus> {
         try {
@@ -41,28 +41,41 @@ class InvoicePaymentService (
             invoiceService.updateStatusById(invoice.id, InvoiceStatus.FAILED_CUSTOMER_NOT_FOUND)
             return Pair(invoice.id, InvoiceStatus.FAILED_CUSTOMER_NOT_FOUND)
         }
+        catch (e : Exception) {
+            println(e)
+            throw e
+        }
     }
 
 
     /**
      * Use the BillingService to pay all the invoices that are due.
-     * In case some of them fail due to network errors, reschedule
-     * this function to run again in t time.
+     * The operations run in the same thread, because SQLite is not thread-safe.
+     * With a more advanced DB we could achieve row-level locks and perform all
+     * operations concurrently, for example using the IO Dispatcher.
+     * With a "real" payment provider API, we could transform the payInvoice function
+     * to a suspend one, so that it can be put on hold while waiting for the
+     * network response.
      */
-    suspend fun performAllPaymentsByStatus(status : InvoiceStatus = InvoiceStatus.PENDING) : List<Pair<Int, InvoiceStatus>> {
+    @ObsoleteCoroutinesApi
+    suspend fun performAllPaymentsByStatus(
+            status : InvoiceStatus = InvoiceStatus.PENDING)
+            : List<Pair<Int, InvoiceStatus>> {
+
         val toPay : List<Invoice> = invoiceService.fetchByStatus(status)
-        val scope = CoroutineScope(Dispatchers.IO)
+        //val scope = CoroutineScope(Dispatchers.IO)
+        val singleThread = newSingleThreadContext("context")
 
         val jobs =
             toPay.map { invoice ->
-                scope.async {
-                    payInvoice(invoice)
+                withContext(singleThread) {
+                    async {
+                        payInvoice(invoice)
+                    }
                 }
             }
 
-        val results = jobs.awaitAll()
-        scope.cancel()
-        return results
+        return jobs.awaitAll()
     }
 
 }
