@@ -42,6 +42,8 @@ fun main() {
     )
 
     val invoicePaymentScheduler = InvoicePaymentScheduler(invoicePaymentService)
+
+    // starts the monthly job schedule. If the app crashes, it is scheduled again at its startup.
     invoicePaymentScheduler.schedulePaymentsWithDelay()
 
     // Create REST web service

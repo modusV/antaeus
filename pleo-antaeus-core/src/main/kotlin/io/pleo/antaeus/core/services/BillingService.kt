@@ -6,8 +6,10 @@ import io.pleo.antaeus.models.Invoice
 class BillingService(
     private val paymentProvider: PaymentProvider
 ) {
-// TODO - Add code e.g. here
 
+    /**
+     * Uses the payment provider API to charge a customer
+     */
     fun payInvoice(invoice : Invoice) : Boolean {
         return paymentProvider.charge(invoice)
     }

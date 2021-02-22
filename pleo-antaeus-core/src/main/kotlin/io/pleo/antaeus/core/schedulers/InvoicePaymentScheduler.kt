@@ -2,6 +2,9 @@ package io.pleo.antaeus.core.schedulers
 
 
 import io.pleo.antaeus.core.services.InvoicePaymentService
+import io.pleo.antaeus.core.utils.millisToNextDay
+import io.pleo.antaeus.core.utils.millisToNextMonth
+import io.pleo.antaeus.core.utils.millisToNextSecond
 import kotlinx.coroutines.runBlocking
 import java.time.temporal.ChronoUnit
 import java.util.concurrent.Executors
@@ -21,6 +24,12 @@ class InvoicePaymentScheduler (
     private var executor : ScheduledExecutorService = Executors.newSingleThreadScheduledExecutor()
 
 
+    /**
+     * This function schedules the invoices payment job.
+     * Each call can handle the payment result depending on our needs.
+     * I did not implement the result management, but you can find more information in
+     * the thought_process.md file.
+     */
     private fun schedulePeriodicWithDelay(
             delay : (Long) -> Long,
             quantity: Long,
@@ -76,6 +85,9 @@ class InvoicePaymentScheduler (
     }
 
 
+    /**
+     * Stops the pending tasks and recreates the executor.
+     */
     fun stopAll() {
         executor.shutdown()
         executor = Executors.newSingleThreadScheduledExecutor()
