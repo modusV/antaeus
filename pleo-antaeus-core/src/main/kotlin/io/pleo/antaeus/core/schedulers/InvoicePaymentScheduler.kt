@@ -54,8 +54,8 @@ class InvoicePaymentScheduler (
      * Schedules a recurring [function] with a specified delay of [quantity] number of [unit]
      */
     fun schedulePaymentsWithDelay(
-        quantity : Long,
-        unit: ChronoUnit,
+        quantity : Long = 1,
+        unit: ChronoUnit = ChronoUnit.MONTHS,
         periodic : Boolean = true,
         function : ((Long) -> Long, Long, Boolean)
             -> ScheduledFuture<*> = ::schedulePeriodicWithDelay
