@@ -9,6 +9,7 @@ import kotlinx.coroutines.*
 
 class InvoicePaymentService (
         private val billingService : BillingService,
+        // Included to deal with currency mismatch
         private val customerService: CustomerService,
         private val invoiceService: InvoiceService
     ) {
@@ -77,5 +78,43 @@ class InvoicePaymentService (
 
         return jobs.awaitAll()
     }
+
+    /**
+     * Example of function to deal with currency mismatch
+     *
+     *
+        suspend fun manageCurrencyMismatch() : List<Pair<Int, InvoiceStatus>> {
+            val toPay : List<Invoice> = invoiceService.fetchByStatus(InvoiceStatus.FAILED_CURRENCY_MISMATCH)
+            val singleThread = newSingleThreadContext("context")
+
+            val jobs = toPay.map { invoice ->
+                try {
+                    val customer: Customer = customerService.fetch(invoice.customerId)
+                    withContext(singleThread) {
+                        async {
+                            // we could slightly modify the payInvoice function to receive an additional
+                            // parameter representing the currency of choice (it would call the billingService
+                            // bank's function charge(invoice, currency)
+                            payInvoiceWithCurrency(invoice, customer.currency)
+                        }
+                    }
+                }
+                catch (e: CustomerNotFoundException) {
+                    withContext(singleThread) {
+                        async {
+                            Pair(invoice.customerId, InvoiceStatus.FAILED_CUSTOMER_NOT_FOUND)
+                        }
+                    }
+                }
+            }
+
+            val res = jobs.awaitAll()
+            // If other CURRENCY_MISMATCH occurs, deal with them somehow, depending on the reasons
+            // why this could occurr
+            return res
+        }
+     *
+     */
+
 
 }
