@@ -65,7 +65,7 @@ class InvoicePaymentSchedulerTest {
      * Helper function that simulates the payment step.
      */
     private fun testPeriodicDelay(
-            delay :(Long) -> Long,
+            delayFun :(Long) -> Long,
             quantity : Long,
             reschedule : Boolean,
             status : InvoiceStatus) : ScheduledFuture<*> {
@@ -77,10 +77,10 @@ class InvoicePaymentSchedulerTest {
 
                 // reschedule task
                 if (reschedule) {
-                    testPeriodicDelay(delay, quantity, true, status)
+                    testPeriodicDelay(delayFun, quantity, true, status)
                 }
             },
-            delay(quantity),
+            delayFun(quantity),
             TimeUnit.MILLISECONDS
         )
     }
