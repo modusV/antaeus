@@ -16,6 +16,7 @@ import io.pleo.antaeus.core.services.InvoiceService
 import io.pleo.antaeus.db.createDb
 import io.pleo.antaeus.models.InvoiceStatus
 import io.pleo.antaeus.rest.AntaeusRest
+import kotlinx.coroutines.runBlocking
 import setupInitialData
 import java.time.temporal.ChronoUnit
 
@@ -45,16 +46,35 @@ fun main() {
 
     val invoicePaymentScheduler = InvoicePaymentScheduler(invoicePaymentService)
 
-    // Starts the monthly job schedule. If the app crashes, the task is scheduled again at startup.
     // To assess the crash case, at startup reschedule all the requests failed due to network problems.
-    invoicePaymentScheduler.schedulePaymentsWithDelay(
-        status = InvoiceStatus.FAILED_NETWORK,
-        periodic = false,
-        quantity = 0,
-        unit = ChronoUnit.SECONDS
-    )
 
+    runBlocking {
+        invoicePaymentScheduler.schedulePaymentsWithDelay(
+            status = InvoiceStatus.FAILED_NETWORK,
+            periodic = false,
+            quantity = 0,
+            unit = ChronoUnit.SECONDS
+        )
+    }
+
+    /**
+     * Here we should start also a job that checks for PAYING requests.
+     * If there are any, we are recovering from a crash event.
+     *
+     *
+    runBlocking {
+    invoicePaymentScheduler.schedulePaymentsWithDelay(
+    status = InvoiceStatus.PAYING,
+    periodic = false,
+    quantity = 0,
+    unit = ChronoUnit.SECONDS
+    )
+    }
+     */
+
+    // Starts the monthly job schedule. If the app crashes, the task is scheduled again at startup.
     invoicePaymentScheduler.schedulePaymentsWithDelay()
+
 
     // Create REST web service
     AntaeusRest(

@@ -34,7 +34,7 @@ class InvoicePaymentScheduler (
      */
     @ObsoleteCoroutinesApi
     private fun schedulePeriodicWithDelay(
-        delay : (Long) -> Long,
+        delayFun : (Long) -> Long,
         quantity: Long,
         reschedule: Boolean,
         status : InvoiceStatus = InvoiceStatus.PENDING) : ScheduledFuture<*> {
@@ -65,18 +65,17 @@ class InvoicePaymentScheduler (
                         quantity = 2 * 60 * 60,
                         unit = ChronoUnit.SECONDS
                     )
-                 *
                 */
 
                 // reschedule task
                 if (reschedule) {
                     schedulePeriodicWithDelay(
-                        delay = delay,
+                        delayFun = delayFun,
                         quantity = quantity,
                         reschedule = reschedule)
                 }
             },
-            delay(quantity),
+            delayFun(quantity),
             TimeUnit.MILLISECONDS
         )
     }
