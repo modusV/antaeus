@@ -12,13 +12,11 @@ import io.pleo.antaeus.models.Customer
 import io.pleo.antaeus.models.Invoice
 import io.pleo.antaeus.models.InvoiceStatus
 import io.pleo.antaeus.models.Money
-import org.jetbrains.exposed.sql.Database
-import org.jetbrains.exposed.sql.insert
-import org.jetbrains.exposed.sql.select
-import org.jetbrains.exposed.sql.selectAll
+import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.transactions.transaction
 
 class AntaeusDal(private val db: Database) {
+
     fun fetchInvoice(id: Int): Invoice? {
         // transaction(db) runs the internal query as a new database transaction.
         return transaction(db) {
@@ -30,22 +28,42 @@ class AntaeusDal(private val db: Database) {
         }
     }
 
-    /**
-     * Returns a list of all the invoices with the requested [status].
-     */
-    fun fetchInvoicesByStatus(status: String): List<Invoice> {
-        return transaction(db) {
-            InvoiceTable
-                .select { InvoiceTable.status.eq(status) }
-                .map { it.toInvoice() }
-        }
-    }
-
     fun fetchInvoices(): List<Invoice> {
         return transaction(db) {
             InvoiceTable
                 .selectAll()
                 .map { it.toInvoice() }
+        }
+    }
+
+    /**
+     * Changes the status of the transaction with id .
+     */
+    fun updateInvoiceStatusById(id: Int, new_status: InvoiceStatus) {
+        transaction(db) {
+            InvoiceTable.update ({ InvoiceTable.id.eq(id) }) {
+                it[status] = new_status.toString()
+            }
+        }
+    }
+
+    /**
+     * Returns a list of all the invoices with the requested [status].
+     */
+    fun fetchInvoicesByStatus(status: InvoiceStatus): List<Invoice> {
+        return transaction(db) {
+            InvoiceTable
+                .select { InvoiceTable.status.eq(status.toString())}
+                .map { it.toInvoice() }
+        }
+    }
+
+    /**
+     * Deletes all rows, useful for testing reasons
+     */
+    fun dropInvoices() {
+        transaction (db) {
+            InvoiceTable.deleteAll()
         }
     }
 
@@ -90,5 +108,14 @@ class AntaeusDal(private val db: Database) {
         }
 
         return fetchCustomer(id)
+    }
+
+    /**
+     * Deletes all customers, useful for testing
+     */
+    fun dropCustomers() {
+        transaction ( db ) {
+            CustomerTable.deleteAll()
+        }
     }
 }

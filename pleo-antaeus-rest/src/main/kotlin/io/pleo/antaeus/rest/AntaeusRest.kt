@@ -8,16 +8,21 @@ import io.javalin.Javalin
 import io.javalin.apibuilder.ApiBuilder.get
 import io.javalin.apibuilder.ApiBuilder.path
 import io.pleo.antaeus.core.exceptions.EntityNotFoundException
+import io.pleo.antaeus.core.schedulers.InvoicePaymentScheduler
 import io.pleo.antaeus.core.services.CustomerService
+import io.pleo.antaeus.core.services.InvoicePaymentService
 import io.pleo.antaeus.core.services.InvoiceService
+import kotlinx.coroutines.runBlocking
 import mu.KotlinLogging
+import java.time.temporal.ChronoUnit
 
 private val logger = KotlinLogging.logger {}
 private val thisFile: () -> Unit = {}
 
 class AntaeusRest(
     private val invoiceService: InvoiceService,
-    private val customerService: CustomerService
+    private val customerService: CustomerService,
+    private val invoicePaymentScheduler: InvoicePaymentScheduler
 ) : Runnable {
 
     override fun run() {
@@ -52,6 +57,18 @@ class AntaeusRest(
                 get("health") {
                     it.json("ok")
                 }
+
+                /*
+                Route for pay invoices testing.
+
+                get("payall") {
+                    invoicePaymentScheduler.schedulePaymentsWithDelay(
+                        unit = ChronoUnit.SECONDS,
+                        periodic = false
+                    ).get()
+                    it.json(invoiceService.fetchAll())
+                }
+                */
 
                 // V1
                 path("v1") {
